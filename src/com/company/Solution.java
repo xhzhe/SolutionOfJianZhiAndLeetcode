@@ -807,12 +807,13 @@ public class Solution {
             ArrayList<Integer> temp = new ArrayList<>(num);
             res.add(temp);
         } else {
+            int before = num.get(begin);
             for (int i = begin; i <= end; i++) {
-                if (i != begin && num.get(i).equals(num.get(begin))) {
+                if (i != begin && num.get(i).equals(before)) {
                     continue;
                 }
+                before = num.get(i);
                 Collections.swap(num, begin, i);
-                System.out.println(num.toString());
                 perm(num, begin + 1, end);
                 Collections.swap(num, begin, i);
             }
