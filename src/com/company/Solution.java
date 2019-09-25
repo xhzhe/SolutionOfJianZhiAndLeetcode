@@ -6,6 +6,8 @@ import sun.security.util.Length;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author : xuhuizhe
@@ -14,6 +16,18 @@ import java.util.*;
  * @modified :
  */
 public class Solution {
+    private static class SingletonHolder {
+        private static final Solution INSTANCE = new Solution();
+    }
+
+    private Solution() {
+    }
+
+    public static Solution getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+
+
     public String LeftRotateString(String str, int n) {
         int length = str.length();
         if (length <= 0) {
@@ -790,35 +804,249 @@ public class Solution {
         return ans;
     }
 
-    List<List<Integer>> res = new ArrayList<>();
+//    List<List<Integer>> res = new ArrayList<>();
+//
+//    public List<List<Integer>> permuteUnique(int[] nums) {
+//        ArrayList<Integer> num = new ArrayList<>();
+//        for (int n : nums) {
+//            num.add(n);
+//        }
+//        Collections.sort(num);
+//        perm(num, 0, num.size() - 1);
+//        return res;
+//    }
+//
+//    public void perm(ArrayList<Integer> num, int begin, int end) {
+//        if (begin == end) {
+//            ArrayList<Integer> temp = new ArrayList<>(num);
+//            res.add(temp);
+//        } else {
+//            int before = num.get(begin);
+//            for (int i = begin; i <= end; i++) {
+//                if (i != begin && num.get(i).equals(before)) {
+//                    continue;
+//                }
+//                before = num.get(i);
+//                Collections.swap(num, begin, i);
+//                perm(num, begin + 1, end);
+//                Collections.swap(num, begin, i);
+//            }
+//        }
+//    }
 
-    public List<List<Integer>> permuteUnique(int[] nums) {
-        ArrayList<Integer> num = new ArrayList<>();
-        for (int n : nums) {
-            num.add(n);
+    private List<List<Integer>> res = new ArrayList<>();
+    private boolean[] used;
+
+    private void findPermuteUnique(int[] nums, int depth, Stack<Integer> stack) {
+        if (depth == nums.length) {
+            res.add(new ArrayList<>(stack));
+            return;
         }
-        Collections.sort(num);
-        perm(num, 0, num.size() - 1);
-        return res;
-    }
-
-    public void perm(ArrayList<Integer> num, int begin, int end) {
-        if (begin == end) {
-            ArrayList<Integer> temp = new ArrayList<>(num);
-            res.add(temp);
-        } else {
-            int before = num.get(begin);
-            for (int i = begin; i <= end; i++) {
-                if (i != begin && num.get(i).equals(before)) {
+        for (int i = 0; i < nums.length; i++) {
+            if (!used[i]) {
+                // 修改 2：因为排序以后重复的数一定不会出现在开始，故 i > 0
+                // 和之前的数相等，并且之前的数还未使用过，只有出现这种情况，才会出现相同分支
+                // 这种情况跳过即可
+                if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) {
                     continue;
                 }
-                before = num.get(i);
-                Collections.swap(num, begin, i);
-                perm(num, begin + 1, end);
-                Collections.swap(num, begin, i);
+                used[i] = true;
+                stack.add(nums[i]);
+                findPermuteUnique(nums, depth + 1, stack);
+                stack.pop();
+                used[i] = false;
             }
         }
     }
+
+    public List<List<Integer>> permuteUnique(int[] nums) {
+        int len = nums.length;
+        if (len == 0) {
+            return res;
+        }
+        // 修改 1：首先排序，之后才有可能发现重复分支
+        Arrays.sort(nums);
+
+        // 如果是降序，需要把 nums 变为包装数组类型，输入 Arrays.sort() 方法才生效，并且还要传入一个比较器，搜索之前，再转为基本类型数组，因此不建议降序排序
+        // Integer[] numsBoxed = IntStream.of(nums).boxed().collect(Collectors.toList()).toArray(new Integer[0]);
+        // Arrays.sort(numsBoxed, Collections.reverseOrder());
+        // nums = Arrays.stream(numsBoxed).mapToInt(Integer::valueOf).toArray();
+
+        used = new boolean[len];
+        findPermuteUnique(nums, 0, new Stack<>());
+        return res;
+    }
+
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        int lenA = getLengthOfListNode(headA);
+        int lenB = getLengthOfListNode(headB);
+        if (lenA == 0 || lenB == 0) {
+            return null;
+        }
+        if (lenA > lenB) {
+            for (int i = 0; i < lenA - lenB; i++) {
+                headA = headA.next;
+            }
+        } else {
+            for (int i = 0; i < lenB - lenA; i++) {
+                headB = headB.next;
+            }
+        }
+        while (headA != headB) {
+            headA = headA.next;
+            headB = headB.next;
+        }
+        return headA;
+    }
+
+    public int getLengthOfListNode(ListNode head) {
+        if (head == null) {
+            return 0;
+        }
+        int length = 1;
+        ListNode p = head;
+        while (p.next != null) {
+            p = p.next;
+            length++;
+        }
+        return length;
+    }
+
+    public int trailingZeroes(int n) {
+        //就是算5的个数
+        int ans = 0;
+        while (n >= 5) {
+            ans += n / 5;
+            n /= 5;
+        }
+        return ans;
+    }
+
+    public int findMaxConsecutiveOnes(int[] nums) {
+        int maxCount = 0;
+        int count = 0;
+        for (int num : nums) {
+            if (num == 1) {
+                count++;
+            } else {
+                maxCount = Math.max(maxCount, count);
+                count = 0;
+            }
+        }
+        maxCount = Math.max(maxCount, count);
+        return maxCount;
+    }
+
+    public int minFlipsMonoIncr(String S) {
+        if (S.length() <= 1) {
+            return 0;
+        }
+        int[] dp = new int[S.length() + 1];
+        for (int i = 0; i < S.length(); i++) {
+            //记录前面需要反转的1的个数
+            dp[i + 1] = dp[i] + (S.charAt(i) == '1' ? 1 : 0);
+        }
+
+        int ans = Integer.MAX_VALUE;
+        for (int i = 0; i <= S.length(); i++) {
+            //dp[length]-dp[i]为后面一段需要反转的1的个数，但是我们需要的是后面需要反转的0的个数，所以要使用length-i来获得后面这一段的长度，再减去个数就是需要反转的0的个数了。
+            ans = Math.min(ans, dp[i] + S.length() - i - (dp[S.length()] - dp[i]));
+        }
+        return ans;
+    }
+
+    public int smallestDistancePair(int[] nums, int k) {
+        if (nums == null || nums.length < 2) {
+            return 0;
+        }
+        int n = nums.length;
+        Arrays.sort(nums);
+        int length = 1;
+        while (k > (n - length)) {
+            k -= n - length;
+            length++;
+        }
+        return nums[k + length] - nums[k];
+    }
+
+    public int reverse(int x) {
+        boolean count = x > 0;
+        if (!count) {
+            x = -x;
+        }
+        long ans = 0;
+        while (x > 0) {
+            ans *= 10;
+            ans += x % 10;
+            if (ans > Integer.MAX_VALUE) {
+                return 0;
+            }
+            x /= 10;
+        }
+        if (!count) {
+            ans = -ans;
+        }
+        return (int) ans;
+    }
+
+    public int myAtoi(String str) {
+        str = str.trim();
+        if (str.length() == 0) {
+            return 0;
+        }
+        int flag = 0;
+        int begin = 0;
+        if (str.charAt(0) == '+' || str.charAt(0) == '-') {
+            if (str.charAt(0) == '+') {
+                flag = 1;
+            } else {
+                flag = -1;
+            }
+            begin = 1;
+        }
+        long sum = 0;
+        for (int i = begin; i < str.length(); i++) {
+            if (str.charAt(i) < '0' || str.charAt(i) > '9') {
+                break;
+            }
+            sum = sum * 10 + (str.charAt(i) - '0');
+            if (sum > Integer.MAX_VALUE) {
+                if (flag == 0) {
+                    return Integer.MAX_VALUE;
+                } else if (flag > 0) {
+                    return Integer.MAX_VALUE;
+                }
+                return Integer.MIN_VALUE;
+            }
+        }
+        if (flag != 0) {
+            return (int) (flag * sum);
+        }
+        return (int) sum;
+    }
+
+
+    int max = 0;
+
+    public int getMax(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        return max;
+    }
+
+    public int getLength(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        int leftLength = 1 + getLength(root.left);
+        int rightLength = 1 + getLength(root.right);
+        int maxLength = leftLength + rightLength - 1;
+        max = Math.max(max, maxLength);
+        return Math.max(leftLength, rightLength);
+    }
+
+
 
 }
 

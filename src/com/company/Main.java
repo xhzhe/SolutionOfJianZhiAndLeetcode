@@ -6,7 +6,7 @@ public class Main {
 
     public static void main(String[] args) {
         // write your code here
-        Solution s = new Solution();
+        Solution s = Solution.getInstance();
         //System.out.println(s.LeftRotateString("abcXYZdef",3));
         //System.out.println(s.ReverseSentence(" "));
         //System.out.println(s.isContinuous(new int[]{1, 3, 0, 0, 5}));
@@ -28,6 +28,7 @@ public class Main {
         //System.out.println(s.getCount(35,38));
         //System.out.println(s.cutRope(8));
         //s.minimumLengthEncoding(new String[]{"dsfgasdfg","gfdgdg"});
-        System.out.println(s.permuteUnique(new int[]{1,1,2,2}).toString());
+        //System.out.println(s.permuteUnique(new int[]{1,1,2,2}).toString());
+
     }
 }
