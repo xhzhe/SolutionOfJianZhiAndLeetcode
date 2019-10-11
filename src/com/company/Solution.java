@@ -1046,7 +1046,414 @@ public class Solution {
         return Math.max(leftLength, rightLength);
     }
 
+    boolean ans = false;
 
+    public boolean makesquare(int[] nums) {
+        int length = 0;
+        for (int i : nums) {
+            length += i;
+        }
+        if (length % 4 != 0) {
+            return false;
+        }
+        length /= 4;
+        for (int i : nums) {
+            if (i > length) {
+                return false;
+            }
+        }
+        Arrays.sort(nums);
+        back(nums, nums.length - 1, length, new int[4]);
+        return ans;
+    }
+
+    public void back(int[] nums, int cur, int target, int[] temp) {
+        if (ans) {
+            return;
+        }
+        if (cur == -1) {
+            for (int num : temp) {
+                if (num != target) {
+                    return;
+                }
+            }
+            ans = true;
+            return;
+        }
+        for (int i = 0; i < temp.length; i++) {
+            int last = temp[i];
+            temp[i] += nums[cur];
+            if (temp[i] <= target) {
+                back(nums, cur - 1, target, temp);
+            }
+            temp[i] = last;
+        }
+    }
+
+    public int findMaxForm(String[] strs, int m, int n) {
+        if (strs == null || strs.length == 0) {
+            return 0;
+        }
+        int[][] dp = new int[m + 1][n + 1];
+        for (String s : strs) {
+            int zero = 0;
+            int one = 0;
+            for (int i = 0; i < s.length(); i++) {
+                //统计0，1个数
+                if (s.charAt(i) == '0') {
+                    zero++;
+                } else {
+                    one++;
+                }
+            }
+            for (int i = m; i >= zero; i--) {
+                for (int j = n; j >= one; j--) {
+                    dp[i][j] = Math.max(dp[i][j], 1 + dp[i - zero][j - one]);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
+//    public int findIntegers(int num) {
+//        return find(0, 0, num, false);
+//    }
+//
+//    public int find(int i, int sum, int num, boolean prev) {
+//        if (sum > num) {
+//            return 0;
+//        }
+//        if (1 << i > num) {
+//            return 1;
+//        }
+//        if (prev) {
+//            return find(i + 1, sum, num, false);
+//        }
+//        return find(i + 1, sum, num, false) + find(i + 1, sum + (1 << i), num, true);
+//    }
+
+
+    public int findIntegers(int num) {
+        int[] f = new int[32];
+        f[0] = 1;
+        f[1] = 2;
+        for (int i = 2; i < f.length; i++) {
+            f[i] = f[i - 1] + f[i - 2];
+        }
+        int i = 30, sum = 0, prev_bit = 0;
+        while (i >= 0) {
+            if ((num & (1 << i)) != 0) {
+                sum += f[i];
+                if (prev_bit == 1) {
+                    sum--;
+                    break;
+                }
+                prev_bit = 1;
+            } else {
+                prev_bit = 0;
+            }
+            i--;
+        }
+        return sum + 1;
+    }
+
+    public char nextGreatestLetter(char[] letters, char target) {
+        int[] t = new int[26];
+        for (char c : letters) {
+            t[c - 'a'] = 1;
+        }
+        for (int i = target - 'a' + 1; ; i++) {
+            if (i >= 26) {
+                i = 0;
+            }
+            if (t[i] == 1) {
+                return (char) ('a' + i);
+            }
+        }
+    }
+
+    public List<String> readBinaryWatch(int num) {
+        ArrayList<String> ans = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            for (int j = 0; j < 60; j++) {
+                if (getOnes(i) + getOnes(j) == num) {
+                    ans.add(i + ":" + (j < 10 ? "0" + j : j));
+                }
+            }
+        }
+        return ans;
+    }
+
+    public int getOnes(int n) {
+        int h = 0;
+        while (n != 0) {
+            if ((n & 1) == 1) {
+                h++;
+            }
+            n >>= 1;
+        }
+        return h;
+    }
+
+    public String removeKdigits(String num, int k) {
+        StringBuilder n = new StringBuilder(num);
+        while (k > 0) {
+            int i;
+            int length = n.length();
+            for (i = 0; i < n.length() - 1; i++) {
+                if (n.charAt(i) > n.charAt(i + 1)) {
+                    n.deleteCharAt(i);
+                    break;
+                }
+            }
+            if (length == n.length()) {
+                n.deleteCharAt(i);
+            }
+            while (n.length() > 1 && n.charAt(0) == '0') {
+                n.deleteCharAt(0);
+            }
+            k--;
+        }
+        return n.length() > 0 ? n.toString() : "0";
+    }
+
+//    public boolean canCross(int[] stones) {
+//        int target = stones[stones.length - 1];
+//        return cross(stones, 1, target, 0);
+//    }
+
+    public boolean cross(int[] stone, int k, int target, int nowStep) {
+        if (k <= 0) {
+            return false;
+        }
+        if (k >= target || nowStep >= target) {
+            return true;
+        }
+        if (binarySearch0(stone, 0, stone.length, nowStep)<0) {
+            return false;
+        }
+        return cross(stone, k, target, nowStep + k) || cross(stone, k + 1, target, nowStep + k + 1) || cross(stone, k - 1, target, nowStep + k - 1);
+    }
+
+    public int binarySearch0(int[] a, int fromIndex, int toIndex,
+                             int key) {
+        int low = fromIndex;
+        int high = toIndex - 1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            int midVal = a[mid];
+
+            if (midVal < key)
+                low = mid + 1;
+            else if (midVal > key)
+                high = mid - 1;
+            else
+                return mid; // key found
+        }
+        return -(low + 1);  // key not found.
+    }
+
+    public boolean canCross(int[] stones) {
+        HashMap<Integer, Set<Integer>> map = new HashMap<>();
+        for (int i = 0; i < stones.length; i++) {
+            map.put(stones[i], new HashSet<>());
+        }
+        map.get(0).add(0);
+        for (int i = 0; i < stones.length; i++) {
+            for (int k : map.get(stones[i])) {
+                for (int step = k - 1; step <= k + 1; step++) {
+                    if (step > 0 && map.containsKey(stones[i] + step)) {
+                        map.get(stones[i] + step).add(step);
+                    }
+                }
+            }
+        }
+        return map.get(stones[stones.length - 1]).size() > 0;
+    }
+
+    public int[] prevPermOpt1(int[] A) {
+        int len = A.length;
+        int curMax = -1;
+        int index = -1;
+        boolean hasResult = false;
+        for (int i = len - 2; i >= 0; i--) {
+            if (A[i+1] < A[i]) {                    // 此处逆序，需要移动A[i]
+                for (int j = i + 1; j < len; j++) { // 寻找与 A[i] 交换的位置
+                    if (A[i] > A[j]) {               // 必须满足 A[i] > A[j]，否则不能满足交换后的字典序小于原始字典序
+                        hasResult = true;
+                        if (A[j] > curMax) {
+                            curMax = A[j];
+                            index = j;
+                        }
+                    }
+                }
+                if (hasResult) {
+                    int tmp = A[i];
+                    A[i] = A[index];
+                    A[index] = tmp;
+                    return A;
+                }
+            }
+        }
+        return A;
+    }
+
+    public int[] sortArrayByParity(int[] A) {
+        int oddIndex=0;
+        int evenIndex=0;
+        while(true){
+            while(evenIndex<A.length&&A[evenIndex]%2==0){
+                evenIndex++;
+            }
+            while(oddIndex<A.length){
+                if(A[oddIndex]%2==0){
+                    if(oddIndex<evenIndex){
+                        oddIndex++;
+                    }else{
+                        break;
+                    }
+                }
+                oddIndex++;
+            }
+            if(oddIndex>=A.length||evenIndex>=A.length){
+                break;
+            }
+            swap(A,oddIndex,evenIndex);
+        }
+        return A;
+    }
+
+    public void swap(int[] a,int i,int j){
+        int temp=a[i];
+        a[i]=a[j];
+        a[j]=temp;
+    }
+
+    public int superpalindromesInRange(String sL, String sR) {
+        long L = Long.valueOf(sL);
+        long R = Long.valueOf(sR);
+        int MAGIC = 100000;
+        int ans = 0;
+
+        // count odd length;
+        for (int k = 1; k < MAGIC; ++k) {
+            StringBuilder sb = new StringBuilder(Integer.toString(k));
+            for (int i = sb.length() - 2; i >= 0; --i) {
+                sb.append(sb.charAt(i));
+            }
+            long v = Long.valueOf(sb.toString());
+            v *= v;
+            if (v > R) {
+                break;
+            }
+            if (v >= L && isPalindrome(v)) {
+                ans++;
+            }
+        }
+
+        // count even length;
+        for (int k = 1; k < MAGIC; ++k) {
+            StringBuilder sb = new StringBuilder(Integer.toString(k));
+            for (int i = sb.length() - 1; i >= 0; --i) {
+                sb.append(sb.charAt(i));
+            }
+            long v = Long.valueOf(sb.toString());
+            v *= v;
+            if (v > R) {
+                break;
+            }
+            if (v >= L && isPalindrome(v)) {
+                ans++;
+            }
+        }
+
+        return ans;
+    }
+
+    public boolean isPalindrome(long x) {
+        return x == reverse(x);
+    }
+
+    public long reverse(long x) {
+        long ans = 0;
+        while (x > 0) {
+            ans = 10 * ans + x % 10;
+            x /= 10;
+        }
+
+        return ans;
+    }
+
+//    public int[] threeEqualParts(int[] A) {
+//
+//    }
+
+    public String convert(String s, int numRows) {
+
+        if (numRows == 1) {
+            return s;
+        }
+
+        List<StringBuilder> rows = new ArrayList<>();
+        for (int i = 0; i < Math.min(numRows, s.length()); i++)
+            rows.add(new StringBuilder());
+
+        int curRow = 0;
+        boolean goingDown = false;
+
+        for (char c : s.toCharArray()) {
+            rows.get(curRow).append(c);
+            if (curRow == 0 || curRow == numRows - 1) goingDown = !goingDown;
+            curRow += goingDown ? 1 : -1;
+        }
+
+        StringBuilder ret = new StringBuilder();
+        for (StringBuilder row : rows) {
+            ret.append(row);
+        }
+        return ret.toString();
+    }
+
+    public List<Integer> topKFrequent(int[] nums, int k) {
+        // build hash map : character and how often it appears
+        HashMap<Integer, Integer> count = new HashMap();
+        for (int n: nums) {
+            count.put(n, count.getOrDefault(n, 0) + 1);
+        }
+
+        // init heap 'the less frequent element first'
+        PriorityQueue<Integer> heap =
+                new PriorityQueue<>((n1, n2) -> count.get(n2) - count.get(n1));
+
+        // keep k top frequent elements in the heap
+        heap.addAll(count.keySet());
+
+        // build output list
+        List<Integer> top_k = new LinkedList();
+        while (k--!=0) {
+            top_k.add(heap.poll());
+        }
+        return top_k;
+    }
+
+    public int findKthNumber(int m, int n, int k) {
+        int lo = 1, hi = m * n + 1;
+        int mid, count;
+        while (lo < hi) {
+            mid = lo + (hi - lo) / 2;
+            count = 0;
+            for (int i = 1; i <= m; i++) {
+                count += (Math.min(mid / i, n));
+            }
+            if (count >= k) {
+                hi = mid;
+            } else {
+                lo = mid + 1;
+            }
+        }
+        return lo;
+    }
 
 }
 

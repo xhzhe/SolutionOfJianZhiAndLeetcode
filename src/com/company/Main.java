@@ -29,6 +29,6 @@ public class Main {
         //System.out.println(s.cutRope(8));
         //s.minimumLengthEncoding(new String[]{"dsfgasdfg","gfdgdg"});
         //System.out.println(s.permuteUnique(new int[]{1,1,2,2}).toString());
-
+        System.out.println(s.removeKdigits("1173",2));
     }
 }
