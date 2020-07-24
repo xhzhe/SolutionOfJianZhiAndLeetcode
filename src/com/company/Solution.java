@@ -6,6 +6,7 @@ import sun.security.util.Length;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -969,25 +970,6 @@ public class Solution {
         return nums[k + length] - nums[k];
     }
 
-    public int reverse(int x) {
-        boolean count = x > 0;
-        if (!count) {
-            x = -x;
-        }
-        long ans = 0;
-        while (x > 0) {
-            ans *= 10;
-            ans += x % 10;
-            if (ans > Integer.MAX_VALUE) {
-                return 0;
-            }
-            x /= 10;
-        }
-        if (!count) {
-            ans = -ans;
-        }
-        return (int) ans;
-    }
 
     public int myAtoi(String str) {
         str = str.trim();
@@ -1195,6 +1177,7 @@ public class Solution {
         return h;
     }
 
+    //h很简单的思路，如果有前面的数大于后面的数，说明移除这个就对了。位数越前越好。
     public String removeKdigits(String num, int k) {
         StringBuilder n = new StringBuilder(num);
         while (k > 0) {
@@ -1217,11 +1200,11 @@ public class Solution {
         return n.length() > 0 ? n.toString() : "0";
     }
 
-//    public boolean canCross(int[] stones) {
+    //    public boolean canCross(int[] stones) {
 //        int target = stones[stones.length - 1];
 //        return cross(stones, 1, target, 0);
 //    }
-
+//没去重，超时了。
     public boolean cross(int[] stone, int k, int target, int nowStep) {
         if (k <= 0) {
             return false;
@@ -1229,7 +1212,8 @@ public class Solution {
         if (k >= target || nowStep >= target) {
             return true;
         }
-        if (binarySearch0(stone, 0, stone.length, nowStep)<0) {
+        //Arrays.binarySearch(stone,nowStep);
+        if (binarySearch0(stone, 0, stone.length, nowStep) < 0) {
             return false;
         }
         return cross(stone, k, target, nowStep + k) || cross(stone, k + 1, target, nowStep + k + 1) || cross(stone, k - 1, target, nowStep + k - 1);
@@ -1244,14 +1228,17 @@ public class Solution {
             int mid = (low + high) >>> 1;
             int midVal = a[mid];
 
-            if (midVal < key)
+            if (midVal < key) {
                 low = mid + 1;
-            else if (midVal > key)
+            } else if (midVal > key) {
                 high = mid - 1;
-            else
-                return mid; // key found
+            } else {
+                // key found
+                return mid;
+            }
         }
-        return -(low + 1);  // key not found.
+        // key not found.
+        return -(low + 1);
     }
 
     public boolean canCross(int[] stones) {
@@ -1260,6 +1247,7 @@ public class Solution {
             map.put(stones[i], new HashSet<>());
         }
         map.get(0).add(0);
+        //对每一个石头，都对每一步进行处理，这里之所以没超时，是因为hashset去重了。。。
         for (int i = 0; i < stones.length; i++) {
             for (int k : map.get(stones[i])) {
                 for (int step = k - 1; step <= k + 1; step++) {
@@ -1269,6 +1257,7 @@ public class Solution {
                 }
             }
         }
+        //判断也没有走到这里
         return map.get(stones[stones.length - 1]).size() > 0;
     }
 
@@ -1278,9 +1267,12 @@ public class Solution {
         int index = -1;
         boolean hasResult = false;
         for (int i = len - 2; i >= 0; i--) {
-            if (A[i+1] < A[i]) {                    // 此处逆序，需要移动A[i]
-                for (int j = i + 1; j < len; j++) { // 寻找与 A[i] 交换的位置
-                    if (A[i] > A[j]) {               // 必须满足 A[i] > A[j]，否则不能满足交换后的字典序小于原始字典序
+            if (A[i + 1] < A[i]) {
+                // 此处逆序，需要移动A[i]
+                for (int j = i + 1; j < len; j++) {
+                    // 寻找与 A[i] 交换的位置
+                    if (A[i] > A[j]) {
+                        // 必须满足 A[i] > A[j]，否则不能满足交换后的字典序小于原始字典序
                         hasResult = true;
                         if (A[j] > curMax) {
                             curMax = A[j];
@@ -1300,34 +1292,34 @@ public class Solution {
     }
 
     public int[] sortArrayByParity(int[] A) {
-        int oddIndex=0;
-        int evenIndex=0;
-        while(true){
-            while(evenIndex<A.length&&A[evenIndex]%2==0){
+        int oddIndex = 0;
+        int evenIndex = 0;
+        while (true) {
+            while (evenIndex < A.length && A[evenIndex] % 2 == 0) {
                 evenIndex++;
             }
-            while(oddIndex<A.length){
-                if(A[oddIndex]%2==0){
-                    if(oddIndex<evenIndex){
+            while (oddIndex < A.length) {
+                if (A[oddIndex] % 2 == 0) {
+                    if (oddIndex < evenIndex) {
                         oddIndex++;
-                    }else{
+                    } else {
                         break;
                     }
                 }
                 oddIndex++;
             }
-            if(oddIndex>=A.length||evenIndex>=A.length){
+            if (oddIndex >= A.length || evenIndex >= A.length) {
                 break;
             }
-            swap(A,oddIndex,evenIndex);
+            swap(A, oddIndex, evenIndex);
         }
         return A;
     }
 
-    public void swap(int[] a,int i,int j){
-        int temp=a[i];
-        a[i]=a[j];
-        a[j]=temp;
+    public void swap(int[] a, int i, int j) {
+        int temp = a[i];
+        a[i] = a[j];
+        a[j] = temp;
     }
 
     public int superpalindromesInRange(String sL, String sR) {
@@ -1371,17 +1363,18 @@ public class Solution {
         return ans;
     }
 
+    //判断数字回文
     public boolean isPalindrome(long x) {
         return x == reverse(x);
     }
 
+    //调转数
     public long reverse(long x) {
         long ans = 0;
         while (x > 0) {
             ans = 10 * ans + x % 10;
             x /= 10;
         }
-
         return ans;
     }
 
@@ -1389,6 +1382,7 @@ public class Solution {
 //
 //    }
 
+    //N字排列字符串
     public String convert(String s, int numRows) {
 
         if (numRows == 1) {
@@ -1396,15 +1390,18 @@ public class Solution {
         }
 
         List<StringBuilder> rows = new ArrayList<>();
-        for (int i = 0; i < Math.min(numRows, s.length()); i++)
+        for (int i = 0; i < Math.min(numRows, s.length()); i++) {
             rows.add(new StringBuilder());
+        }
 
         int curRow = 0;
         boolean goingDown = false;
-
+        //很容易知道哪个字符是哪一列的。
         for (char c : s.toCharArray()) {
             rows.get(curRow).append(c);
-            if (curRow == 0 || curRow == numRows - 1) goingDown = !goingDown;
+            if (curRow == 0 || curRow == numRows - 1) {
+                goingDown = !goingDown;
+            }
             curRow += goingDown ? 1 : -1;
         }
 
@@ -1415,23 +1412,18 @@ public class Solution {
         return ret.toString();
     }
 
+    //这里很简单，只是建堆
     public List<Integer> topKFrequent(int[] nums, int k) {
-        // build hash map : character and how often it appears
         HashMap<Integer, Integer> count = new HashMap();
-        for (int n: nums) {
+        for (int n : nums) {
             count.put(n, count.getOrDefault(n, 0) + 1);
         }
-
-        // init heap 'the less frequent element first'
+        //这里学到了，优先级队列传入比较器建堆
         PriorityQueue<Integer> heap =
                 new PriorityQueue<>((n1, n2) -> count.get(n2) - count.get(n1));
-
-        // keep k top frequent elements in the heap
         heap.addAll(count.keySet());
-
-        // build output list
         List<Integer> top_k = new LinkedList();
-        while (k--!=0) {
+        while (k-- != 0) {
             top_k.add(heap.poll());
         }
         return top_k;
@@ -1455,7 +1447,239 @@ public class Solution {
         return lo;
     }
 
+//    public boolean isSelfCrossing(int[] x) {
+//
+//    }
+
+    List<Integer> access;
+//    public List<Integer> postorderTraversal(TreeNode root) {
+//        access=new ArrayList<>();
+//        backFind(root);
+//        return access;
+//    }
+
+    public void backFind(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        backFind(node.left);
+        backFind(node.right);
+        access.add(node.val);
+    }
+
+    //非递归解法
+    public List<Integer> postorderTraversal(TreeNode root) {
+        LinkedList<TreeNode> stack = new LinkedList<>();
+        LinkedList<Integer> output = new LinkedList<>();
+        if (root == null) {
+            return output;
+        }
+        stack.add(root);
+        while (!stack.isEmpty()) {
+            //这里会获得
+            TreeNode node = stack.pollLast();
+            assert node != null;
+            //把这个放在最前
+            output.addFirst(node.val);
+            //这里有个左右的次序，被访问时会依次把右放入，再把左放入，因为是插入顶端，所以就倒过来。
+            if (node.left != null) {
+                stack.add(node.left);
+            }
+            if (node.right != null) {
+                stack.add(node.right);
+            }
+        }
+        return output;
+    }
+
+
+    //后续遍历
+    ArrayList<Integer> postOrderList;
+
+    public List<Integer> postorder(Node root) {
+        postOrderList = new ArrayList<>();
+        postOrder(root);
+        return postOrderList;
+    }
+
+    public void postOrder(Node node) {
+        if (node == null) {
+            return;
+        }
+        for (Node n : node.children) {
+            postOrder(n);
+        }
+        postOrderList.add(node.val);
+    }
+
+    //中序遍历
+    ArrayList<Integer> inOrderList;
+
+    public List<Integer> inorderTraversal(TreeNode root) {
+        inOrderList = new ArrayList<>();
+        inOrder(root);
+        return inOrderList;
+    }
+
+    public void inOrder(TreeNode node) {
+        if (node == null) {
+            return;
+        }
+        inOrder(node.left);
+        inOrderList.add(node.val);
+        inOrder(node.right);
+    }
+
+    //中序遍历
+//    public boolean isValidBST(TreeNode root) {
+//        ArrayList<Integer> inOrderList=new ArrayList<>();
+//        inOrder(root,inOrderList);
+//        for(int i=0;i<inOrderList.size()-1;i++){
+//            if(inOrderList.get(i)>=inOrderList.get(i+1)){
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
+//
+//    public void inOrder(TreeNode node,List<Integer> inOrderList) {
+//        if (node == null) {
+//            return;
+//        }
+//        inOrder(node.left,inOrderList);
+//        inOrderList.add(node.val);
+//        inOrder(node.right,inOrderList);
+//    }
+
+    //    //record up and low
+//    public boolean helper(TreeNode node, Integer lower, Integer upper) {
+//        if (node == null) {
+//            return true;
+//        }
+//        int val = node.val;
+//        if (lower != null && val <= lower) {
+//            return false;
+//        }
+//        if (upper != null && val >= upper) {
+//            return false;
+//        }
+//        if (! helper(node.right, val, upper)) {
+//            return false;
+//        }
+//        return helper(node.left, lower, val);
+//    }
+//
+//    public boolean isValidBST(TreeNode root) {
+//        return helper(root, null, null);
+//    }
+
+    //优雅的中序遍历
+    public boolean isValidBST(TreeNode root) {
+        Stack<TreeNode> stack = new Stack();
+        double inorder = -Double.MAX_VALUE;
+
+        while (!stack.isEmpty() || root != null) {
+            while (root != null) {
+                stack.push(root);
+                root = root.left;
+            }
+            root = stack.pop();
+            // If next element in inorder traversal
+            // is smaller than the previous one
+            // that's not BST.
+            if (root.val <= inorder) {
+                return false;
+            }
+            inorder = root.val;
+            root = root.right;
+        }
+        return true;
+    }
+
+
+    public int clumsy(int N) {
+        int[] des=new int[]{1,2,2,-1};
+        if(N>4){
+            return N+des[N%4];
+        }
+        if(N>2){
+            return N+3;
+        }
+        return N;
+    }
+
+    public int[] sortedSquares(int[] A) {
+        for(int i=0;i<A.length;i++){
+            A[i]=A[i]*A[i];
+        }
+        Arrays.sort(A);
+        return A;
+    }
+
+    public boolean isPalindrome(int x) {
+        return x==reverse(x);
+    }
+
+    public int reverse(int x) {
+        boolean count = x > 0;
+        if (!count) {
+            x = -x;
+        }
+        long ans = 0;
+        while (x > 0) {
+            ans *= 10;
+            ans += x % 10;
+            if (ans > Integer.MAX_VALUE) {
+                return 0;
+            }
+            x /= 10;
+        }
+        if (!count) {
+            ans = -ans;
+        }
+        return (int) ans;
+    }
+
+
+    public int lenLongestFibSubseq(int[] A) {
+        ExecutorService e1=new ThreadPoolExecutor();
+        int N = A.length;
+        Set<Integer> S = new HashSet();
+        for (int x: A) {
+            S.add(x);
+        }
+        int ans = 0;
+        for (int i = 0; i < N; ++i) {
+            for (int j = i+1; j < N; ++j) {
+                int x = A[j], y = A[i] + A[j];
+                int length = 2;
+                while (S.contains(y)) {
+                    // x, y -> y, x+y
+                    int tmp = y;
+                    y += x;
+                    x = tmp;
+                    ans = Math.max(ans, ++length);
+                }
+            }
+        }
+
+        return ans >= 3 ? ans : 0;
+    }
+
 }
+
+class Node {
+    public int val;
+    public List<Node> children;
+
+    public Node() {
+    }
+
+    public Node(int _val, List<Node> _children) {
+        val = _val;
+        children = _children;
+    }
+};
 
 class TrieNode {
     private TrieNode[] children;
